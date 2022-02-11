@@ -1,0 +1,19 @@
+{
+  "name": "typescript_compiler",
+  "version": "1.0.0",
+  "description": "Understanding TypeScript compiler",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "lite-server"
+  },
+  "keywords": [
+    "javascript",
+    "typescript"
+  ],
+  "author": "ahuerta <adrian.huerta@unosquare.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "lite-server": "^2.6.1"
+  }
+}
