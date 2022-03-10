@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./index.css" />
+    <title>Directives Exercise</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <div class="row">
+        <input
+          type="number"
+          name="txtNum1"
+          id="txtNum1"
+          v-model.number="num1"
+          @change="total = num1 + num2"
+        />
+        <span>+</span>
+        <input
+          type="number"
+          name="txtNum2"
+          id="txtNum2"
+          v-model.number="num2"
+          @change="total = num1 + num2"
+        />
+        <span>=</span>
+        <span>{{ total }}</span>
+      </div>
+      <div class="row second">
+        <select v-model="name" name="sltTaco" id="sltTaco">
+          <option value="Carne asada">Carne asada</option>
+          <option value="Pollo">Pollo</option>
+          <option value="Bean">Bean</option>
+          <option value="Al Pastor">Al Pastor</option>
+        </select>
+        <p v-if="name">My favorite kind of taco is {{ name }}</p>
+      </div>
+    </div>
+  </body>
+</html>
+<script type="module">
+  import { createApp } from "vue";
+
+  createApp({
+    data() {
+      return {
+        num1: 0,
+        num2: 0,
+        total: 0,
+        name: "",
+      };
+    },
+  }).mount("#app");
+</script>
