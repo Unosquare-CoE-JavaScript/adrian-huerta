@@ -1,47 +1,67 @@
+/* eslint no-console:0 */
 const path = require('path')
+const inquirer = require('inquirer')
 const replace = require('replace-in-file')
+const isCI = require('is-ci')
+const spawn = require('cross-spawn')
 
-const email = process.argv[2]
-
-if (!email) {
-  throw new Error('You must provide an email address as an argument')
-}
-
-const clientGlob = [
-  path.join(__dirname, '..', 'client/src/**/*.js'),
-  path.join(__dirname, '..', 'client/tests/**/*.js'),
-]
-
-const apiGlob = [
-  path.join(__dirname, '..', 'api/src/**/*.js'),
-  path.join(__dirname, '..', 'api/tests/**/*.js'),
-]
-
-const options = {
-  files: clientGlob.concat(apiGlob),
-  from: /&em=\n/,
-  to: `&em=${email}`,
-}
-
-replace(options).then(
-  changedFiles => {
-    console.log(`Updated ${changedFiles.length} with the email ${email}`)
-  },
-  error => {
-    console.error('Failed to update files')
-    console.error(error.stack)
-  }
-)
-
-// this is not transpiled
-/*
-  eslint
-  comma-dangle: [
-    2,
+if (isCI) {
+  console.log(`Not running autofill feedback as we're on CI`)
+} else {
+  const prompt = inquirer.prompt([
     {
-      arrays: 'always-multiline',
-      objects: 'always-multiline',
-      functions: 'never'
+      name: 'email',
+      message: `what's your email address?`,
+      validate(val) {
+        if (!val) {
+          // they don't want to do this...
+          return true
+        } else if (!val.includes('@')) {
+          return 'email requires an @ sign...'
+        }
+        return true
+      },
+    },
+  ])
+  const timeoutId = setTimeout(() => {
+    console.log(
+      `\n\nprompt timed out. No worries. Run \`node ./scripts/autofill-feedback-email.js\` if you'd like to try again`,
+    )
+    prompt.ui.close()
+  }, 15000)
+
+  prompt.then(({email} = {}) => {
+    clearTimeout(timeoutId)
+    if (!email) {
+      console.log(`Not autofilling email because none was provided`)
+      return
     }
-  ]
- */
+    const options = {
+      files: [
+        path.join(__dirname, '..', 'client/src/**/*.js'),
+        path.join(__dirname, '..', 'client/test/**/*.js'),
+        path.join(__dirname, '..', 'server/src/**/*.js'),
+        path.join(__dirname, '..', 'server/test/**/*.js'),
+        path.join(__dirname, '..', 'cypress/e2e/**/*.js'),
+      ],
+      from: /&em=\n/,
+      to: `&em=${email}\n`,
+    }
+
+    replace(options).then(
+      changedFiles => {
+        console.log(`Updated ${changedFiles.length} with the email ${email}`)
+        console.log(
+          'committing changes for you so your jest watch mode works nicely',
+        )
+        spawn.sync('git', ['commit', '-am', 'email autofill', '--no-verify'], {
+          stdio: 'inherit',
+        })
+      },
+      error => {
+        console.error('Failed to update files')
+        console.error(error.stack)
+      },
+    )
+  })
+}

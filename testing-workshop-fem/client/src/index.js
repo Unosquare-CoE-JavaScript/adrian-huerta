@@ -1,19 +1,14 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {Provider} from 'react-redux'
-import {BrowserRouter, HashRouter} from 'react-router-dom'
-import createStore from './store'
-import AppRoutes from './app'
+import App from './app'
+import {init} from './utils/api'
 
-const Router = process.env.NODE_ENV === 'production' ?
-  BrowserRouter :
-  HashRouter
+import './index.css'
 
-ReactDOM.render(
-  <Provider store={createStore()}>
-    <Router>
-      <AppRoutes />
-    </Router>
-  </Provider>,
-  document.getElementById('root'),
-)
+if (window.Cypress) {
+  init({baseURL: window.Cypress.env('API_URL').trim()})
+} else {
+  init()
+}
+
+ReactDOM.render(<App />, document.getElementById('⚛️'))

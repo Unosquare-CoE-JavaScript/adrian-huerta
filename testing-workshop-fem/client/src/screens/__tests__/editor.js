@@ -1,72 +1,54 @@
 import React from 'react'
-import {mount} from 'enzyme'
-import {Component as Editor} from '../editor'
+import {
+  generate,
+  wait,
+  cleanup,
+  fireEvent,
+  renderIntoDocument,
+  render,
+} from 'til-client-test-utils'
+import Editor from '../editor'
 
-// Here's where your tests go... What are the use-cases
-// our editor should support? Here are some ideas:
-// 1. Can be handy to just render the default and get a snapshot
-//   for just a baseline
-// 2. What about if I provide an override for a prop? How does
-//   that render differently? Any specific assertions I should make?
-// 3. What about user interaction? Maybe the tag input interaction?
-//   Run the application and login (user: "joe@example.com", pass: "joe")
-//   and play around with the tag component. How could we use some
-//   of the utilities to make sure that interaction keeps working?
+afterEach(cleanup)
 
-// I'm going to go ahead and give these utils to you
-// because I think you get the idea :)
-// And this is a little domain-specific anyway.
-function mountEditor(props = {}) {
-  const propsToUse = {
-    onLoad() {},
-    onSubmit() {},
-    onUnload() {},
-    articleSlug: '',
-    title: '',
-    description: '',
-    body: '',
-    tagList: [],
-    inProgress: false,
-    params: {},
-    ...props,
+test('calls onSubmit with the username and password when submitted', async () => {
+  // Arrange
+  const fakeUser = generate.userData({id: generate.id()})
+  const fakePost = generate.postData({authorId: fakeUser.id})
+  const fakeHistory = {push: jest.fn()}
+  const fakeApi = {
+    posts: {
+      create: jest.fn(() => Promise.resolve()),
+    },
   }
-  return mount(<Editor {...propsToUse} />)
-}
+  const {getByText, getByLabelText} = renderIntoDocument(
+    <Editor api={fakeApi} user={fakeUser} history={fakeHistory} />,
+  )
 
-// This helper will make it easier to change the value
-// in an input element. For example:
-// changeInputValue(tagInput, 'hello')
-// will change the input's value to 'hello'
-function changeInputValue(input, value) {
-  input.simulate('change', {target: {value}})
-}
+  getByLabelText('Title').value = fakePost.title
+  getByLabelText('Content').value = fakePost.content
+  getByLabelText('Tags').value = fakePost.tags.join(', ')
+  const preDate = Date.now()
 
-// this helper will make it easier to fire the keyUp event
-// on elements. For example:
-// keyUpInput(tagInput, 13)
-// will fire the "enter" key on that input
-function keyUpInput(input, keyCode) {
-  input.simulate('keyup', {keyCode})
-}
+  // Act
+  fireEvent.click(getByText('submit'))
 
-// this helper will make it easier for you to find
-// labeled elements in the wrapper:
-// const tagInput = wrapper.find(sel('tags'))
-function sel(id) {
-  return `[data-test="${id}"]`
-}
+  // Assert
+  expect(fakeApi.posts.create).toHaveBeenCalledTimes(1)
+  expect(fakeApi.posts.create).toHaveBeenCalledWith({
+    ...fakePost,
+    date: expect.any(String),
+  })
 
-//////// Elaboration & Feedback /////////
-// When you've finished with the exercises:
-// 1. Copy the URL below into your browser and fill out the form
-// 2. remove the `.skip` from the test below
-// 3. Change submitted from `false` to `true`
-// 4. And you're all done!
-/*
-http://ws.kcd.im/?ws=Testing&e=Client%20Unit%20Editor&em=
-*/
-test.skip('I submitted my elaboration and feedback', () => {
-  const submitted = false // change this when you've submitted!
-  expect(true).toBe(submitted)
+  const postDate = Date.now()
+  await wait(() => expect(fakeHistory.push).toHaveBeenCalledTimes(1))
+  expect(fakeHistory.push).toHaveBeenCalledWith('/')
+  const date = new Date(fakeApi.posts.create.mock.calls[0][0].date).getTime()
+  expect(date).toBeGreaterThanOrEqual(preDate)
+  expect(date).toBeLessThanOrEqual(postDate)
 })
-////////////////////////////////
+
+test('snapshot', () => {
+  const {container} = render(<Editor />)
+  expect(container.firstChild).toMatchSnapshot()
+})
