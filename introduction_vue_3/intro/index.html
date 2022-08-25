@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./index.css" />
+    <title>Intro to Vue 3</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <div style="margin-bottom: 30px; margin-top: 20px">
+        <input v-model="message" type="text" name="txtDemo" id="txtDemo" />
+      </div>
+      <div>
+        <button :class="[message ? activeClass: '']">
+          Button enables when the input has any text
+        </button>
+      </div>
+      <div>
+        <div>
+          <button v-show="message">
+            This button is hidden on the DOM when the input is empty
+          </button>
+        </div>
+        <div>
+          <button v-if="message">
+            This button is mounted on the DOM when the input has any text and
+            unmounted when is empty
+          </button>
+        </div>
+      </div>
+      <div>{{ message }}</div>
+      <div style="margin-top: 20px; margin-bottom: 20px">
+        <h3>Do you like tacos?</h3>
+
+        <input v-model="tacos" type="radio" name="no" id="no" value="no" />
+        <label for="no">No</label>
+
+        <input v-model="tacos" type="radio" name="yes" id="yes" value="yes" />
+        <label for="yes">Yes</label>
+
+        <p v-if="tacos === 'yes'">👍🏻</p>
+        <p v-else-if="tacos === 'no'">👎🏻</p>
+      </div>
+      <div>
+        <ul>
+          <li v-for="(lan, index) in languages" :key="index">{{ lan }}</li>
+        </ul>
+      </div>
+      <div>
+        <p v-html="link"></p>
+      </div>
+    </div>
+
+    <script type="module">
+      import { createApp } from "vue";
+
+      createApp({
+        data() {
+          return {
+            message: "",
+            tacos: "",
+            activeClass: "active",
+            languages: ["JavaScript", "Python", ".Net"],
+            link: "this is a <a href='http://www.google.com'>link to google</a>",
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+.row {
+  margin: 50px;
+  display: flex;
+  justify-content: center;
+  font-family: "Work Sans", sans-serif;
+}
+
+input,
+span {
+  padding: 10px;
+  font-size: 30px;
+  font-family: "Work Sans", sans-serif;
+}
+
+input {
+  width: 50px;
+}
+
+span {
+  width: 20px;
+}
+
+.second {
+  font-size: 18px;
+}
+
+p {
+  margin-left: 20px;
+}
